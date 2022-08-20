@@ -1,10 +1,15 @@
+import { Editor } from "./components/Editor";
 import "./index.css";
 
 function App() {
   return (
-    <div className='container mx-auto py-6'>
-      <h1 className="font-bold text-3xl">Starter Template</h1>
-      <p>Vite, React, TypeScript, TailwindCSS 3</p>
+    <div className="container mx-auto py-6 ">
+      <h1 className="font-bold text-3xl">draftjs-experiment</h1>
+      <div className="max-w-md">
+        <div className="border py-4 px-2 border-neutral-500/50 rounded mt-5">
+          <Editor />
+        </div>
+      </div>
     </div>
   );
 }
