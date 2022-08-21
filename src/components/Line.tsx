@@ -1,6 +1,6 @@
 import React, { Fragment, useContext } from "react";
 import { ContentBlock, ContentState, EditorBlock, SelectionState } from "draft-js";
-import { EditorContext } from "./Editor";
+import { BlockMetaMap, EditorContext } from "./Editor";
 
 const DEBUGGING = {
   LINE: false
@@ -20,17 +20,36 @@ export const Line = ({
   const { block, contentState } = props;
   const blockMap = contentState.getBlockMap().toArray();
   const blockKey = block.key;
-  const currentText = block.getText() as string;
   // @ts-ignore
   const lineNumber = blockMap.findIndex((block) => blockKey === block.key) + 1;
   const size = `${blockMap.length}`.length;
   const lineValue = DEBUGGING.LINE ? blockKey : lineNumber;
-  const getLineStatus = (warningBlocks: string[]) => {
-    if (warningBlocks.includes(blockKey)) {
-      return "warning";
+
+  const getLineStatus = (blockStates: BlockMetaMap) => {
+    const blockState = blockStates.get(blockKey);
+    if (blockState) {
+      return blockState.status;
     }
     return "";
   };
+
+  const getActiveStatus = (blockStates: BlockMetaMap) => {
+    const blockState = blockStates.get(blockKey);
+    if (blockState) {
+      return blockState.isActive;
+    }
+    return false;
+  };
+
+  const getLineInfo = (blockStates: BlockMetaMap) => {
+    const blockState = blockStates.get(blockKey);
+    if (blockState) {
+      console.debug(blockState);
+      return blockState.info;
+    }
+    return "";
+  };
+
   return (
     <div
       className={`flex items-start relative
@@ -38,40 +57,73 @@ export const Line = ({
     `}
     >
       <EditorContext.Consumer>
-        {({ warningBlocks }) => (
+        {({ blockStates }) => (
           <>
+            {/* Background of line */}
             <div
               contentEditable={false}
               // @ts-ignore
               readOnly={true}
-              className={`absolute inset-0 ${
-                getLineStatus(warningBlocks) === "warning" ? "bg-yellow-500/20" : ""
-              }`}
-            />
-            {props.blockProps.showLineNumbers && (
-              <div
-                onClick={() => props.blockProps.onGlyphClick(block)}
-                className={`
-                  relative -left-5 flex-shrink-0 -mr-2 select-none text-right opacity-80
-                  ${getLineStatus(warningBlocks) ? "bg-yellow-600/20" : "bg-transparent"}
+              className={`text-transparent absolute inset-0 border rounded  isolate select-none pointer-events-none 
+              ${getLineStatus(blockStates) === "error" ? "bg-rose-500/10" : ""}
+              ${getActiveStatus(blockStates) ? "border-neutral-400/40" : "border-transparent"}
                 `}
-                style={{
-                  width: DEBUGGING.LINE ? "4rem" : `${Math.max(size + 1, 3)}ch`
-                }}
-                contentEditable={false}
-                // @ts-ignore
-                readOnly={true}
-                data-line-value={lineValue}
-              >
-                <span>{lineValue}</span>
-              </div>
+            >
+              &nbsp;
+            </div>
+            <div
+              contentEditable={false}
+              // @ts-ignore
+              readOnly={true}
+              className={` text-xs absolute inset-y-0 right-0 items-center flex px-2 rounded-r isolate select-none pointer-events-none 
+              ${getLineStatus(blockStates) === "error" ? "bg-rose-200 z-10 text-red-700 font-medium" : ""}
+                `}
+            >
+              {getLineInfo(blockStates)}
+            </div>
+            {props.blockProps.showLineNumbers && (
+              <>
+                <div
+                  className={`absolute inset-y-0 left-0 text-transparent select-none pointer-events-none ${
+                    getLineStatus(blockStates) === "error"
+                      ? "bg-rose-600/30 rounded-l "
+                      : "bg-transparent"
+                  }`}
+                  style={{
+                    width: DEBUGGING.LINE ? "4rem" : `${Math.max(size + 1, 3)}ch`
+                  }}
+                  contentEditable={false}
+                  // @ts-ignore
+                  readOnly={true}
+                >
+                  <span>{lineValue}</span>
+                </div>
+
+                <div
+                  onClick={() => props.blockProps.onGlyphClick(block)}
+                  className={`
+                  relative h-full flex-shrink-0 select-none text-right opacity-80
+                  -left-4
+                  
+                `}
+                  style={{
+                    width: DEBUGGING.LINE ? "4rem" : `${Math.max(size + 1, 3)}ch`
+                  }}
+                  contentEditable={false}
+                  // @ts-ignore
+                  readOnly={true}
+                  data-line-value={lineValue}
+                >
+                  <span>{lineValue}</span>
+                </div>
+              </>
             )}
           </>
         )}
       </EditorContext.Consumer>
       {/* Editable Area */}
       <div
-        className="focus:outline-none whitespace-nowrap w-full relative"
+        className="focus:outline-none whitespace-nowrap w-full relative "
         data-line-empty={block.getLength() === 0}
       >
         <EditorBlock {...props} readOnly={true} />
