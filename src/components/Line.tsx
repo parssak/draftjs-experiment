@@ -76,7 +76,7 @@ export const Line = ({
               // @ts-ignore
               readOnly={true}
               className={` text-xs absolute inset-y-0 right-0 items-center flex px-2 rounded-r isolate select-none pointer-events-none 
-              ${getLineStatus(blockStates) === "error" ? "bg-rose-200 z-10 text-red-700 font-medium" : ""}
+              ${getLineStatus(blockStates) === "error" ? "bg-rose-200 dark:bg-red-700 dark:text-rose-200 z-10 text-red-700 font-medium" : ""}
                 `}
             >
               {getLineInfo(blockStates)}

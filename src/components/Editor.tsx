@@ -146,6 +146,7 @@ export const Editor = ({ ...props }: Props) => {
     const blockKeys = blockMap.keySeq().toArray();
     const anchorKey = editorState.getSelection().getAnchorKey();
     const focusKey = editorState.getSelection().getFocusKey();
+    console.debug('Editor useEffect', anchorKey, focusKey);
 
     const newBlockStates: BlockMetaMap = new Map(
       blockKeys.map((key) => [
